@@ -152,23 +152,79 @@
         }
 
         #noBtn.broken {
-            background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
-            color: white;
-            clip-path: polygon(
-                0% 0%, 45% 0%, 50% 10%, 55% 0%, 100% 0%,
-                100% 45%, 90% 50%, 100% 55%, 100% 100%,
-                55% 100%, 50% 90%, 45% 100%, 0% 100%,
-                0% 55%, 10% 50%, 0% 45%
-            );
-            animation: shake 0.5s ease;
+            background: transparent;
+            color: transparent;
             pointer-events: none;
-            opacity: 0.5;
+            position: relative;
+            overflow: visible;
+            box-shadow: none;
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px) rotate(-5deg); }
-            75% { transform: translateX(10px) rotate(5deg); }
+        #noBtn.broken::before,
+        #noBtn.broken::after {
+            content: '💔';
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        #noBtn.broken::before {
+            left: 0;
+            border-radius: 50px 0 0 50px;
+            clip-path: polygon(0% 0%, 100% 0%, 90% 30%, 100% 50%, 85% 70%, 100% 100%, 0% 100%);
+            animation: splitLeft 2s ease-out forwards;
+        }
+
+        #noBtn.broken::after {
+            right: 0;
+            border-radius: 0 50px 50px 0;
+            clip-path: polygon(10% 30%, 0% 50%, 15% 70%, 0% 100%, 100% 100%, 100% 0%, 0% 0%);
+            animation: splitRight 2s ease-out forwards;
+        }
+
+        @keyframes splitLeft {
+            0% { 
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            30% {
+                transform: translateX(-5px) rotate(-3deg);
+                opacity: 1;
+            }
+            60% {
+                transform: translateX(-20px) rotate(-8deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateX(-40px) translateY(20px) rotate(-15deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes splitRight {
+            0% { 
+                transform: translateX(0) rotate(0deg);
+                opacity: 1;
+            }
+            30% {
+                transform: translateX(5px) rotate(3deg);
+                opacity: 1;
+            }
+            60% {
+                transform: translateX(20px) rotate(8deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateX(40px) translateY(20px) rotate(15deg);
+                opacity: 0;
+            }
         }
 
         #noBtn.disabled {
@@ -435,7 +491,7 @@
 
         <div class="success-message" id="successScreen">
             <div class="celebration">🎉 💖 🎊</div>
-            <h2 class="message">Yay! You made me the happiest! 💕</h2>
+            <h2 class="message">Yay! 💕</h2>
             <div class="gif-container">
                 <img src="https://media.giphy.com/media/g9582DNuQppxC/giphy.gif" alt="Celebration">
             </div>
@@ -724,7 +780,8 @@
             // Break the button at final click
             if (clickCount >= noButtonTexts.length) {
                 noBtnElement.classList.add('broken');
-                noBtnElement.textContent = "💔";
+                noBtnElement.textContent = "";
+                yesBtnElement.textContent = "Yes (Good Try! 😈)";
             }
         });
 
@@ -775,27 +832,46 @@
         function stopSlot(slotNum) {
             const reel = document.getElementById('reel' + slotNum);
             const stopBtn = document.getElementById('stop' + slotNum);
+            const slotDisplay = document.getElementById('slot' + slotNum);
+            const slotHeight = slotDisplay.offsetHeight;
+            
+            // Get the current computed transform while spinning
+            const computedStyle = window.getComputedStyle(reel);
+            const matrix = computedStyle.transform;
+            
+            // Parse the transform matrix to get current Y translation
+            let currentY = 0;
+            if (matrix && matrix !== 'none') {
+                const values = matrix.match(/matrix.*\((.+)\)/);
+                if (values && values[1]) {
+                    const parts = values[1].split(', ');
+                    currentY = parseFloat(parts[5]) || 0;
+                }
+            }
             
             // Stop spinning
             reel.classList.remove('spinning');
             stopBtn.disabled = true;
             
-            // Randomly pick YES or NO
-            const result = Math.random() < 0.5 ? 'yes' : 'no';
+            // Determine which item is currently centered in the view
+            // The visible center is at slotHeight/2 from the top of the display
+            // With translateY(currentY), reel position r shows at window position r + currentY
+            // So the reel position at window center is: slotHeight/2 - currentY
+            const centerReelPosition = (slotHeight / 2) - currentY;
             
-            // Get the height of one slot item (120px on desktop, 100px on mobile)
-            const slotDisplay = document.getElementById('slot' + slotNum);
-            const slotHeight = slotDisplay.offsetHeight;
+            // Each item is slotHeight tall. Find which item's range contains the center.
+            // Item 0 (YES): 0 to slotHeight
+            // Item 1 (NO): slotHeight to 2*slotHeight
+            // Item 2 (YES): 2*slotHeight to 3*slotHeight
+            // Item 3 (NO): 3*slotHeight to 4*slotHeight
+            const itemIndex = Math.floor(centerReelPosition / slotHeight) % 4;
             
-            // Position the reel to show ONLY the selected result centered
-            // The slot display shows one item at a time due to overflow:hidden
-            if (result === 'yes') {
-                // Show the first YES (at position 0)
-                reel.style.transform = 'translateY(0)';
-            } else {
-                // Show the first NO (at position -slotHeight)
-                reel.style.transform = `translateY(-${slotHeight}px)`;
-            }
+            // Items alternate: YES (0), NO (1), YES (2), NO (3)
+            const result = (itemIndex % 2 === 0) ? 'yes' : 'no';
+            
+            // Snap to the nearest clean position for this item
+            const targetY = -itemIndex * slotHeight;
+            reel.style.transform = `translateY(${targetY}px)`;
             
             // Store result
             if (slotNum === 1) {
@@ -822,13 +898,13 @@
             const continueBtn = document.getElementById('continueBtn');
             
             if (slot1Result === 'yes' && slot2Result === 'yes' && slot3Result === 'yes') {
-                resultDiv.textContent = "All RED! You really don't want to? 💔";
+                resultDiv.textContent = "Sad, you really don't want to? 💔";
                 continueBtn.dataset.action = 'broken-heart';
             } else if (slot1Result === 'no' && slot2Result === 'no' && slot3Result === 'no') {
-                resultDiv.textContent = "All GREEN! Great! You're not sure... so that's a YES! 😊";
+                resultDiv.textContent = "Great! You're not sure... so that's a YES! 😊";
                 continueBtn.dataset.action = 'disabled';
             } else {
-                resultDiv.textContent = "Mixed results! Haha, try again... 😏";
+                resultDiv.textContent = "Haha, well if it's not a NO then it's a YES... 😏";
                 continueBtn.dataset.action = 'try-again';
             }
             
@@ -848,7 +924,7 @@
                 noBtnElement.textContent = "Great!";
                 noBtnElement.classList.add('disabled');
             } else if (action === 'try-again') {
-                noBtnElement.textContent = "Haha, try again...";
+                noBtnElement.textContent = "Try again...";
                 clickCount = 4; // Reset to trigger slot machine again
             }
         });
