@@ -112,8 +112,9 @@
             justify-content: center;
             align-items: center;
             margin-top: 2rem;
-            min-height: 150px;
+            min-height: 200px;
             flex-wrap: wrap;
+            padding: 1rem;
         }
 
         button {
@@ -144,6 +145,7 @@
             background: linear-gradient(135deg, #E8E8E8, #C8C8C8);
             color: var(--dark-text);
             position: absolute;
+            transition: left 0.3s ease-out, top 0.3s ease-out, background 0.3s ease;
         }
 
         #noBtn:hover {
@@ -513,29 +515,37 @@
                 Math.pow(mouseY - btnCenterY, 2)
             );
 
-            const threshold = 100;
+            const threshold = 120; // Trigger movement when cursor is within 120px
             
             if (distance < threshold) {
                 const angle = Math.atan2(btnCenterY - mouseY, btnCenterX - mouseX);
-                const moveDistance = 150;
+                const moveDistance = 60; // Reduced from 150 to 60 for slower movement
                 
-                let newX = btnCenterX + Math.cos(angle) * moveDistance;
-                let newY = btnCenterY + Math.sin(angle) * moveDistance;
+                // Calculate new position
+                const newCenterX = btnCenterX + Math.cos(angle) * moveDistance;
+                const newCenterY = btnCenterY + Math.sin(angle) * moveDistance;
                 
-                // Boundary detection
-                const container = document.querySelector('.buttons-container');
+                // Get container boundaries
+                const container = document.querySelector('.container');
                 const containerRect = container.getBoundingClientRect();
                 
-                const maxX = containerRect.width - rect.width / 2;
-                const maxY = containerRect.height - rect.height / 2;
-                const minX = rect.width / 2;
-                const minY = rect.height / 2;
+                // Calculate boundaries with padding
+                const padding = 20;
+                const minX = containerRect.left + padding + rect.width / 2;
+                const maxX = containerRect.right - padding - rect.width / 2;
+                const minY = containerRect.top + padding + rect.height / 2;
+                const maxY = containerRect.bottom - padding - rect.height / 2;
                 
-                newX = Math.max(minX, Math.min(maxX, newX - containerRect.left));
-                newY = Math.max(minY, Math.min(maxY, newY - containerRect.top));
+                // Clamp new position within boundaries
+                const clampedX = Math.max(minX, Math.min(maxX, newCenterX));
+                const clampedY = Math.max(minY, Math.min(maxY, newCenterY));
                 
-                noBtnElement.style.left = newX - rect.width / 2 + 'px';
-                noBtnElement.style.top = newY - rect.height / 2 + 'px';
+                // Set position relative to container
+                const buttonsContainer = document.querySelector('.buttons-container');
+                const buttonsRect = buttonsContainer.getBoundingClientRect();
+                
+                noBtnElement.style.left = (clampedX - buttonsRect.left - rect.width / 2) + 'px';
+                noBtnElement.style.top = (clampedY - buttonsRect.top - rect.height / 2) + 'px';
             }
         }
 
@@ -552,20 +562,33 @@
             touchTimeout = setInterval(() => {
                 const rect = noBtnElement.getBoundingClientRect();
                 const randomAngle = Math.random() * Math.PI * 2;
-                const moveDistance = 100;
+                const moveDistance = 50; // Reduced for slower movement
                 
-                let newX = rect.left + Math.cos(randomAngle) * moveDistance;
-                let newY = rect.top + Math.sin(randomAngle) * moveDistance;
+                const newCenterX = rect.left + rect.width / 2 + Math.cos(randomAngle) * moveDistance;
+                const newCenterY = rect.top + rect.height / 2 + Math.sin(randomAngle) * moveDistance;
                 
-                const container = document.querySelector('.buttons-container');
+                // Get container boundaries
+                const container = document.querySelector('.container');
                 const containerRect = container.getBoundingClientRect();
                 
-                newX = Math.max(0, Math.min(containerRect.width - rect.width, newX - containerRect.left));
-                newY = Math.max(0, Math.min(containerRect.height - rect.height, newY - containerRect.top));
+                // Calculate boundaries with padding
+                const padding = 20;
+                const minX = containerRect.left + padding + rect.width / 2;
+                const maxX = containerRect.right - padding - rect.width / 2;
+                const minY = containerRect.top + padding + rect.height / 2;
+                const maxY = containerRect.bottom - padding - rect.height / 2;
                 
-                noBtnElement.style.left = newX + 'px';
-                noBtnElement.style.top = newY + 'px';
-            }, 500);
+                // Clamp new position within boundaries
+                const clampedX = Math.max(minX, Math.min(maxX, newCenterX));
+                const clampedY = Math.max(minY, Math.min(maxY, newCenterY));
+                
+                // Set position relative to buttons container
+                const buttonsContainer = document.querySelector('.buttons-container');
+                const buttonsRect = buttonsContainer.getBoundingClientRect();
+                
+                noBtnElement.style.left = (clampedX - buttonsRect.left - rect.width / 2) + 'px';
+                noBtnElement.style.top = (clampedY - buttonsRect.top - rect.height / 2) + 'px';
+            }, 800); // Slower interval too
         });
 
         document.addEventListener('touchend', () => {
