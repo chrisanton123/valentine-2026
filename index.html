@@ -898,7 +898,7 @@
             const continueBtn = document.getElementById('continueBtn');
             
             if (slot1Result === 'yes' && slot2Result === 'yes' && slot3Result === 'yes') {
-                resultDiv.textContent = "Sad, you really don't want to? 💔";
+                resultDiv.textContent = "You really don't want to? 💔";
                 continueBtn.dataset.action = 'broken-heart';
             } else if (slot1Result === 'no' && slot2Result === 'no' && slot3Result === 'no') {
                 resultDiv.textContent = "Great! You're not sure... so that's a YES! 😊";
