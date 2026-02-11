@@ -100,9 +100,9 @@
 
         .gif-container img {
             width: 100%;
-            max-width: 400px;
-            height: auto;
+            object-fit: fill;
             display: block;
+            margin: 0 auto;
         }
 
         .buttons-container {
@@ -113,7 +113,6 @@
             align-items: center;
             margin-top: 2rem;
             min-height: 200px;
-            flex-wrap: wrap;
             padding: 1rem;
         }
 
@@ -134,18 +133,18 @@
             background: linear-gradient(135deg, var(--primary-pink), var(--accent-red));
             color: white;
             transform: scale(1);
+            position: relative;
         }
 
         #yesBtn:hover {
-            transform: scale(1.1);
             box-shadow: 0 8px 25px var(--heart-glow);
         }
 
         #noBtn {
             background: linear-gradient(135deg, #E8E8E8, #C8C8C8);
             color: var(--dark-text);
-            position: absolute;
-            transition: left 0.3s ease-out, top 0.3s ease-out, background 0.3s ease;
+            position: relative;
+            transition: transform 0.3s ease-out, background 0.3s ease;
         }
 
         #noBtn:hover {
@@ -232,6 +231,7 @@
             width: 500px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: modalSlide 0.3s ease;
+            text-align: center;
         }
 
         @keyframes modalSlide {
@@ -274,20 +274,40 @@
             position: relative;
         }
 
-        .slot-spinning {
-            animation: spin 0.1s linear infinite;
+        .slot-reel {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
-        @keyframes spin {
+        .slot-reel:not(.spinning) {
+            transition: transform 0.5s ease-out;
+        }
+
+        .slot-reel.spinning {
+            animation: scrollSlot 2s linear infinite;
+        }
+
+        @keyframes scrollSlot {
             0% { transform: translateY(0); }
-            100% { transform: translateY(-100%); }
+            100% { transform: translateY(-240px); }
         }
 
         .slot-result {
             padding: 0.5rem 1rem;
-            border-radius: 8px;
+            border-radius: 0;
             font-weight: 700;
             text-align: center;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            margin: 0;
+            box-sizing: border-box;
         }
 
         .slot-yes {
@@ -329,6 +349,32 @@
             min-height: 30px;
         }
 
+        .continue-btn {
+            display: none;
+            margin-top: 1.5rem;
+            background: var(--primary-pink);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1rem;
+            font-family: 'Quicksand', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .continue-btn.show {
+            display: inline-block;
+        }
+
+        .continue-btn:hover {
+            background: var(--accent-red);
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px var(--heart-glow);
+        }
+
         @media (max-width: 600px) {
             .question {
                 font-size: 2rem;
@@ -344,8 +390,27 @@
                 height: 100px;
             }
 
+            .slot-result {
+                width: 80px;
+                height: 100px;
+                font-size: 0.9rem;
+            }
+
+            .slot-result small {
+                font-size: 0.7rem;
+            }
+
             .container {
                 padding: 2rem 1rem;
+            }
+
+            .slot-machine {
+                gap: 0.5rem;
+            }
+
+            @keyframes scrollSlot {
+                0% { transform: translateY(0); }
+                100% { transform: translateY(-200px); }
             }
         }
     </style>
@@ -359,7 +424,7 @@
             <h1 class="question">Will you be my Valentine? 💕</h1>
             
             <div class="gif-container">
-                <img id="mainGif" src="https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif" alt="Pleading puppy">
+                <img id="mainGif" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExaHE4eWVoa3hubHVsb3JqcTkybjN2aW14emFtbGZlNnhwcGpxZjVsMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/TkBoNth0Ps3Vm/giphy.gif" alt="Pleading puppy">
             </div>
 
             <div class="buttons-container">
@@ -389,25 +454,41 @@
             <div class="slot-machine">
                 <div class="slot-column">
                     <div class="slot-display" id="slot1">
-                        <span id="slot1Text">❓</span>
+                        <div class="slot-reel" id="reel1">
+                            <div class="slot-result slot-yes">YES<br><small>I want to say no</small></div>
+                            <div class="slot-result slot-no">NO<br><small>I am not sure</small></div>
+                            <div class="slot-result slot-yes">YES<br><small>I want to say no</small></div>
+                            <div class="slot-result slot-no">NO<br><small>I am not sure</small></div>
+                        </div>
                     </div>
                     <button class="stop-btn" id="stop1">STOP</button>
                 </div>
                 <div class="slot-column">
                     <div class="slot-display" id="slot2">
-                        <span id="slot2Text">❓</span>
+                        <div class="slot-reel" id="reel2">
+                            <div class="slot-result slot-yes">YES<br><small>I want to say no</small></div>
+                            <div class="slot-result slot-no">NO<br><small>I am not sure</small></div>
+                            <div class="slot-result slot-yes">YES<br><small>I want to say no</small></div>
+                            <div class="slot-result slot-no">NO<br><small>I am not sure</small></div>
+                        </div>
                     </div>
                     <button class="stop-btn" id="stop2">STOP</button>
                 </div>
                 <div class="slot-column">
                     <div class="slot-display" id="slot3">
-                        <span id="slot3Text">❓</span>
+                        <div class="slot-reel" id="reel3">
+                            <div class="slot-result slot-yes">YES<br><small>I want to say no</small></div>
+                            <div class="slot-result slot-no">NO<br><small>I am not sure</small></div>
+                            <div class="slot-result slot-yes">YES<br><small>I want to say no</small></div>
+                            <div class="slot-result slot-no">NO<br><small>I am not sure</small></div>
+                        </div>
                     </div>
                     <button class="stop-btn" id="stop3">STOP</button>
                 </div>
             </div>
 
             <div class="modal-result" id="slotResult"></div>
+            <button class="continue-btn" id="continueBtn">Continue</button>
         </div>
     </div>
 
@@ -496,11 +577,29 @@
         let isMouseMoving = false;
         let currentX = 0;
         let currentY = 0;
+        let noBtnInitialPos = null;
+
+        // Get initial position after page load
+        window.addEventListener('load', () => {
+            const rect = noBtnElement.getBoundingClientRect();
+            noBtnInitialPos = {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+        });
 
         function moveNoButton(e) {
             if (noBtnElement.classList.contains('broken') || 
                 noBtnElement.classList.contains('disabled')) {
                 return;
+            }
+
+            if (!noBtnInitialPos) {
+                const rect = noBtnElement.getBoundingClientRect();
+                noBtnInitialPos = {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2
+                };
             }
 
             const rect = noBtnElement.getBoundingClientRect();
@@ -515,37 +614,32 @@
                 Math.pow(mouseY - btnCenterY, 2)
             );
 
-            const threshold = 120; // Trigger movement when cursor is within 120px
+            const threshold = 120;
             
             if (distance < threshold) {
                 const angle = Math.atan2(btnCenterY - mouseY, btnCenterX - mouseX);
-                const moveDistance = 60; // Reduced from 150 to 60 for slower movement
+                const moveDistance = 60;
                 
-                // Calculate new position
                 const newCenterX = btnCenterX + Math.cos(angle) * moveDistance;
                 const newCenterY = btnCenterY + Math.sin(angle) * moveDistance;
                 
-                // Get container boundaries
                 const container = document.querySelector('.container');
                 const containerRect = container.getBoundingClientRect();
                 
-                // Calculate boundaries with padding
                 const padding = 20;
                 const minX = containerRect.left + padding + rect.width / 2;
                 const maxX = containerRect.right - padding - rect.width / 2;
                 const minY = containerRect.top + padding + rect.height / 2;
                 const maxY = containerRect.bottom - padding - rect.height / 2;
                 
-                // Clamp new position within boundaries
                 const clampedX = Math.max(minX, Math.min(maxX, newCenterX));
                 const clampedY = Math.max(minY, Math.min(maxY, newCenterY));
                 
-                // Set position relative to container
-                const buttonsContainer = document.querySelector('.buttons-container');
-                const buttonsRect = buttonsContainer.getBoundingClientRect();
+                // Calculate offset from initial position
+                const offsetX = clampedX - noBtnInitialPos.x;
+                const offsetY = clampedY - noBtnInitialPos.y;
                 
-                noBtnElement.style.left = (clampedX - buttonsRect.left - rect.width / 2) + 'px';
-                noBtnElement.style.top = (clampedY - buttonsRect.top - rect.height / 2) + 'px';
+                noBtnElement.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1)`;
             }
         }
 
@@ -557,38 +651,47 @@
 
         // Mobile touch support
         let touchTimeout;
+        let touchInitialPos = null;
+
         noBtnElement.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            
+            if (!touchInitialPos) {
+                const rect = noBtnElement.getBoundingClientRect();
+                touchInitialPos = {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2
+                };
+            }
+            
             touchTimeout = setInterval(() => {
                 const rect = noBtnElement.getBoundingClientRect();
                 const randomAngle = Math.random() * Math.PI * 2;
-                const moveDistance = 50; // Reduced for slower movement
+                const moveDistance = 50;
                 
-                const newCenterX = rect.left + rect.width / 2 + Math.cos(randomAngle) * moveDistance;
-                const newCenterY = rect.top + rect.height / 2 + Math.sin(randomAngle) * moveDistance;
+                const btnCenterX = rect.left + rect.width / 2;
+                const btnCenterY = rect.top + rect.height / 2;
                 
-                // Get container boundaries
+                const newCenterX = btnCenterX + Math.cos(randomAngle) * moveDistance;
+                const newCenterY = btnCenterY + Math.sin(randomAngle) * moveDistance;
+                
                 const container = document.querySelector('.container');
                 const containerRect = container.getBoundingClientRect();
                 
-                // Calculate boundaries with padding
                 const padding = 20;
                 const minX = containerRect.left + padding + rect.width / 2;
                 const maxX = containerRect.right - padding - rect.width / 2;
                 const minY = containerRect.top + padding + rect.height / 2;
                 const maxY = containerRect.bottom - padding - rect.height / 2;
                 
-                // Clamp new position within boundaries
                 const clampedX = Math.max(minX, Math.min(maxX, newCenterX));
                 const clampedY = Math.max(minY, Math.min(maxY, newCenterY));
                 
-                // Set position relative to buttons container
-                const buttonsContainer = document.querySelector('.buttons-container');
-                const buttonsRect = buttonsContainer.getBoundingClientRect();
+                const offsetX = clampedX - touchInitialPos.x;
+                const offsetY = clampedY - touchInitialPos.y;
                 
-                noBtnElement.style.left = (clampedX - buttonsRect.left - rect.width / 2) + 'px';
-                noBtnElement.style.top = (clampedY - buttonsRect.top - rect.height / 2) + 'px';
-            }, 800); // Slower interval too
+                noBtnElement.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1)`;
+            }, 800);
         });
 
         document.addEventListener('touchend', () => {
@@ -626,11 +729,6 @@
         });
 
         // Slot Machine Logic
-        const slotOptions = [
-            { text: 'YES', type: 'yes', display: '<div class="slot-result slot-yes">YES<br><small>I want to say no</small></div>' },
-            { text: 'NO', type: 'no', display: '<div class="slot-result slot-no">NO<br><small>I am not sure</small></div>' }
-        ];
-
         let slot1Running = false;
         let slot2Running = false;
         let slot3Running = false;
@@ -651,79 +749,109 @@
             document.getElementById('stop2').disabled = false;
             document.getElementById('stop3').disabled = false;
             document.getElementById('slotResult').textContent = '';
+            document.getElementById('continueBtn').classList.remove('show');
             
-            spinSlot('slot1');
-            spinSlot('slot2');
-            spinSlot('slot3');
+            // Reset reel positions
+            const reel1 = document.getElementById('reel1');
+            const reel2 = document.getElementById('reel2');
+            const reel3 = document.getElementById('reel3');
+            
+            reel1.style.transform = 'translateY(0)';
+            reel2.style.transform = 'translateY(0)';
+            reel3.style.transform = 'translateY(0)';
+            
+            // Start spinning all reels after a brief delay
+            setTimeout(() => {
+                reel1.classList.add('spinning');
+                reel2.classList.add('spinning');
+                reel3.classList.add('spinning');
+            }, 50);
         }
 
-        function spinSlot(slotId) {
-            const slotText = document.getElementById(slotId + 'Text');
-            const interval = setInterval(() => {
-                const randomOption = slotOptions[Math.floor(Math.random() * slotOptions.length)];
-                slotText.innerHTML = randomOption.display;
-            }, 100);
-            
-            slotText.dataset.interval = interval;
-        }
+        document.getElementById('stop1').addEventListener('click', () => stopSlot(1));
+        document.getElementById('stop2').addEventListener('click', () => stopSlot(2));
+        document.getElementById('stop3').addEventListener('click', () => stopSlot(3));
 
-        document.getElementById('stop1').addEventListener('click', () => stopSlot('slot1', 1));
-        document.getElementById('stop2').addEventListener('click', () => stopSlot('slot2', 2));
-        document.getElementById('stop3').addEventListener('click', () => stopSlot('slot3', 3));
-
-        function stopSlot(slotId, slotNum) {
-            const slotText = document.getElementById(slotId + 'Text');
-            const interval = slotText.dataset.interval;
-            clearInterval(interval);
+        function stopSlot(slotNum) {
+            const reel = document.getElementById('reel' + slotNum);
+            const stopBtn = document.getElementById('stop' + slotNum);
             
-            const result = slotOptions[Math.floor(Math.random() * slotOptions.length)];
-            slotText.innerHTML = result.display;
+            // Stop spinning
+            reel.classList.remove('spinning');
+            stopBtn.disabled = true;
             
-            if (slotNum === 1) {
-                slot1Running = false;
-                slot1Result = result.type;
-                document.getElementById('stop1').disabled = true;
-            } else if (slotNum === 2) {
-                slot2Running = false;
-                slot2Result = result.type;
-                document.getElementById('stop2').disabled = true;
-            } else if (slotNum === 3) {
-                slot3Running = false;
-                slot3Result = result.type;
-                document.getElementById('stop3').disabled = true;
+            // Randomly pick YES or NO
+            const result = Math.random() < 0.5 ? 'yes' : 'no';
+            
+            // Get the height of one slot item (120px on desktop, 100px on mobile)
+            const slotDisplay = document.getElementById('slot' + slotNum);
+            const slotHeight = slotDisplay.offsetHeight;
+            
+            // Position the reel to show ONLY the selected result centered
+            // The slot display shows one item at a time due to overflow:hidden
+            if (result === 'yes') {
+                // Show the first YES (at position 0)
+                reel.style.transform = 'translateY(0)';
+            } else {
+                // Show the first NO (at position -slotHeight)
+                reel.style.transform = `translateY(-${slotHeight}px)`;
             }
             
+            // Store result
+            if (slotNum === 1) {
+                slot1Running = false;
+                slot1Result = result;
+            } else if (slotNum === 2) {
+                slot2Running = false;
+                slot2Result = result;
+            } else if (slotNum === 3) {
+                slot3Running = false;
+                slot3Result = result;
+            }
+            
+            // Check if all slots are stopped
             if (!slot1Running && !slot2Running && !slot3Running) {
-                checkSlotResult();
+                setTimeout(() => {
+                    checkSlotResult();
+                }, 500);
             }
         }
 
         function checkSlotResult() {
             const resultDiv = document.getElementById('slotResult');
+            const continueBtn = document.getElementById('continueBtn');
             
             if (slot1Result === 'yes' && slot2Result === 'yes' && slot3Result === 'yes') {
                 resultDiv.textContent = "All RED! You really don't want to? 💔";
-                setTimeout(() => {
-                    slotModal.classList.remove('show');
-                    noBtnElement.textContent = "Fine, you hate me don't you? 😭";
-                    clickCount = noButtonTexts.length - 1;
-                }, 2000);
+                continueBtn.dataset.action = 'broken-heart';
             } else if (slot1Result === 'no' && slot2Result === 'no' && slot3Result === 'no') {
                 resultDiv.textContent = "All GREEN! Great! You're not sure... so that's a YES! 😊";
-                setTimeout(() => {
-                    slotModal.classList.remove('show');
-                    noBtnElement.textContent = "Great!";
-                    noBtnElement.classList.add('disabled');
-                }, 2000);
+                continueBtn.dataset.action = 'disabled';
             } else {
                 resultDiv.textContent = "Mixed results! Haha, try again... 😏";
-                setTimeout(() => {
-                    slotModal.classList.remove('show');
-                    noBtnElement.textContent = "Haha, try again...";
-                    clickCount = 4; // Reset to trigger slot machine again
-                }, 2000);
+                continueBtn.dataset.action = 'try-again';
             }
+            
+            // Show continue button
+            continueBtn.classList.add('show');
         }
+
+        // Continue button handler
+        document.getElementById('continueBtn').addEventListener('click', () => {
+            const action = document.getElementById('continueBtn').dataset.action;
+            slotModal.classList.remove('show');
+            
+            if (action === 'broken-heart') {
+                noBtnElement.textContent = "Fine, you hate me don't you? 😭";
+                clickCount = noButtonTexts.length - 1;
+            } else if (action === 'disabled') {
+                noBtnElement.textContent = "Great!";
+                noBtnElement.classList.add('disabled');
+            } else if (action === 'try-again') {
+                noBtnElement.textContent = "Haha, try again...";
+                clickCount = 4; // Reset to trigger slot machine again
+            }
+        });
     </script>
 </body>
 </html>
