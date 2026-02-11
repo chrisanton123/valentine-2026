@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A Question for You 💕</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose:      #ff4f7b;
+      --rose-dark: #d63060;
+      --blush:     #ffe0ea;
+      --petal:     #fff0f5;
+      --cream:     #fff8fa;
+      --text:      #5c1a2e;
+      --muted:     #a0607a;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── Floating hearts background ─────────────────────────── */
+    .hearts-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .heart-particle {
+      position: absolute;
+      bottom: -60px;
+      font-size: 1.4rem;
+      animation: floatUp linear infinite;
+      opacity: 0;
+      user-select: none;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) rotate(-15deg); opacity: 0; }
+      10%  { opacity: 0.6; }
+      90%  { opacity: 0.4; }
+      100% { transform: translateY(-110vh) rotate(20deg); opacity: 0; }
+    }
+
+    /* ── Page wrapper ────────────────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ── Card ────────────────────────────────────────────────── */
+    .card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 2px solid rgba(255, 79, 123, 0.18);
+      border-radius: 32px;
+      padding: 3rem 2.5rem 2.5rem;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow:
+        0 8px 40px rgba(255, 79, 123, 0.18),
+        0 2px 8px rgba(255, 79, 123, 0.10);
+      animation: cardIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: scale(0.85) translateY(30px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ── Pill label ──────────────────────────────────────────── */
+    .pill {
+      display: inline-block;
+      background: var(--blush);
+      color: var(--rose-dark);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+      animation: fadeSlideDown 0.6s 0.3s both;
+    }
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── GIF area ────────────────────────────────────────────── */
+    .gif-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 1.8rem;
+    }
+    .gif-wrap img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid var(--rose);
+      box-shadow: 0 0 0 6px var(--blush), 0 8px 30px rgba(255,79,123,0.25);
+      animation: fadeSlideDown 0.7s 0.5s both;
+      display: block;
+    }
+    .gif-wrap .heart-ring {
+      position: absolute;
+      inset: -14px;
+      border-radius: 50%;
+      border: 2px dashed rgba(255, 79, 123, 0.35);
+      animation: spin 12s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Question text ───────────────────────────────────────── */
+    .question {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      color: var(--text);
+      line-height: 1.25;
+      margin-bottom: 0.5rem;
+      animation: fadeSlideDown 0.7s 0.7s both;
+    }
+    .sub {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      animation: fadeSlideDown 0.7s 0.85s both;
+    }
+
+    /* ── Button row ──────────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeSlideDown 0.7s 1s both;
+    }
+
+    /* YES button */
+    .btn-yes {
+      background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.85rem 2.2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(255, 79, 123, 0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.03em;
+    }
+    .btn-yes:hover {
+      transform: scale(1.08);
+      box-shadow: 0 6px 28px rgba(255, 79, 123, 0.55);
+    }
+    .btn-yes:active { transform: scale(0.97); }
+
+    /* NO button */
+    .btn-no {
+      background: #fff;
+      color: var(--muted);
+      border: 2px solid var(--blush);
+      border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.8rem 1.8rem;
+      cursor: pointer;
+      transition: transform 0.12s, opacity 0.12s;
+      letter-spacing: 0.02em;
+      /* allow absolute positioning when escaping */
+      position: relative;
+    }
+
+    /* ── Sassy tooltip ───────────────────────────────────────── */
+    .sassy {
+      margin-top: 1.2rem;
+      font-size: 0.9rem;
+      color: var(--rose);
+      font-weight: 700;
+      min-height: 1.4em;
+      opacity: 0;
+      transition: opacity 0.3s;
+      animation: fadeSlideDown 0.4s both;
+    }
+    .sassy.show { opacity: 1; }
+
+    /* ── Celebration state ───────────────────────────────────── */
+    .celebrate-msg {
+      display: none;
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(1.5rem, 4.5vw, 2rem);
+      color: var(--rose-dark);
+      line-height: 1.3;
+      margin-top: 1.5rem;
+      animation: bounceIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes bounceIn {
+      from { opacity: 0; transform: scale(0.5); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* ── Gradient mesh background ────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, #ffd6e4 0%, transparent 60%),
+        radial-gradient(ellipse 70% 50% at 80% 90%, #ffc2d4 0%, transparent 60%),
+        radial-gradient(ellipse 60% 70% at 60% 40%, #fff0f5 0%, transparent 70%),
+        var(--cream);
+    }
+
+    /* ── Responsive tweaks ───────────────────────────────────── */
+    @media (max-width: 400px) {
+      .card { padding: 2rem 1.25rem 2rem; }
+      .gif-wrap img { width: 160px; height: 160px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating hearts background -->
+  <div class="hearts-bg" id="heartsBg"></div>
+
+  <div class="page">
+    <div class="card" id="card">
+
+      <div class="pill">💌 A Special Message</div>
+
+      <!-- GIF (switches on yes) -->
+      <div class="gif-wrap">
+        <span class="heart-ring"></span>
+        <img
+          id="mainGif"
+          src="https://media.giphy.com/media/OHRzFmOGxHGLC/giphy.gif"
+          alt="Puppy with big puppy eyes"
+        />
+      </div>
+
+      <!-- Question -->
+      <p class="question" id="question">Will you be my Valentine? 💕</p>
+      <p class="sub" id="sub">Think very carefully before you answer&nbsp;😇</p>
+
+      <!-- Buttons -->
+      <div class="btn-row" id="btnRow">
+        <button class="btn-yes" id="btnYes" onclick="handleYes()">Yes! 💖</button>
+        <button class="btn-no"  id="btnNo">No</button>
+      </div>
+
+      <!-- Sassy message slot -->
+      <p class="sassy" id="sassy"></p>
+
+      <!-- Celebration message (hidden until yes) -->
+      <p class="celebrate-msg" id="celebrateMsg">
+        Yay!! You've made me the happiest person alive! 🎉💕
+      </p>
+
+    </div>
+  </div>
+
+  <script>
+    /* ─────────────────────────────────────────────
+       Floating hearts background
+    ───────────────────────────────────────────── */
+    const EMOJIS = ['💕','❤️','💗','💓','🩷','💘','💝','🌸'];
+    const bg = document.getElementById('heartsBg');
+
+    function spawnHeart() {
+      const el = document.createElement('span');
+      el.className = 'heart-particle';
+      el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      const dur = 7 + Math.random() * 10;
+      const delay = Math.random() * 6;
+      el.style.animationDuration = dur + 's';
+      el.style.animationDelay = delay + 's';
+      el.style.fontSize = (0.9 + Math.random() * 1.2) + 'rem';
+      bg.appendChild(el);
+      setTimeout(() => el.remove(), (dur + delay) * 1000 + 500);
+    }
+    // Initial batch
+    for (let i = 0; i < 18; i++) spawnHeart();
+    setInterval(spawnHeart, 900);
+
+
+    /* ─────────────────────────────────────────────
+       NO button — the impossible button
+    ───────────────────────────────────────────── */
+    const btnNo = document.getElementById('btnNo');
+    const sassyEl = document.getElementById('sassy');
+
+    let nearMisses = 0;
+    let lastEscape = 0;
+    let isFixed = false; // becomes true after we switch to fixed positioning
+    const noLabels = ['No', 'Are you sure?', 'Really??', 'Please don\'t…', 'That\'s not an option 💅'];
+    const sassyLines = [
+      'Nice try 😏',
+      'Nope! 🙅‍♀️',
+      'You can\'t catch me~',
+      'Wrong button, babe 💕',
+      'Try the pink one 😇',
+      'Getting closer… jk 😂',
+      'That\'s adorable. Still no.',
+    ];
+
+    function getNoRect() {
+      return btnNo.getBoundingClientRect();
+    }
+
+    function escapeNo(cursorX, cursorY) {
+      const now = Date.now();
+      if (now - lastEscape < 120) return; // throttle
+      lastEscape = now;
+      nearMisses++;
+
+      // Update label every ~3 attempts
+      const labelIdx = Math.min(Math.floor(nearMisses / 3), noLabels.length - 1);
+      btnNo.textContent = noLabels[labelIdx];
+
+      // Show sassy message
+      if (nearMisses >= 3) {
+        const line = sassyLines[Math.min(nearMisses - 3, sassyLines.length - 1)];
+        sassyEl.textContent = line;
+        sassyEl.classList.add('show');
+      }
+
+      // Switch to fixed positioning for free movement on first escape
+      if (!isFixed) {
+        const r = getNoRect();
+        btnNo.style.position = 'fixed';
+        btnNo.style.left = r.left + 'px';
+        btnNo.style.top  = r.top  + 'px';
+        btnNo.style.zIndex = '9999';
+        btnNo.style.margin = '0';
+        isFixed = true;
+      }
+
+      const btnW = btnNo.offsetWidth;
+      const btnH = btnNo.offsetHeight;
+      const margin = 16;
+      const maxX = window.innerWidth  - btnW - margin;
+      const maxY = window.innerHeight - btnH - margin;
+
+      // Try to pick a position far from cursor
+      let bestX, bestY, bestDist = 0;
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const candidateX = margin + Math.random() * maxX;
+        const candidateY = margin + Math.random() * maxY;
+        const dx = candidateX + btnW / 2 - cursorX;
+        const dy = candidateY + btnH / 2 - cursorY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > bestDist) {
+          bestDist = dist;
+          bestX = candidateX;
+          bestY = candidateY;
+        }
+      }
+
+      // Flash invisible briefly then teleport
+      btnNo.style.opacity = '0';
+      btnNo.style.transition = 'opacity 0.08s';
+      setTimeout(() => {
+        btnNo.style.left = bestX + 'px';
+        btnNo.style.top  = bestY + 'px';
+        btnNo.style.opacity = '1';
+      }, 90);
+    }
+
+    // Desktop: mousemove proximity detection
+    document.addEventListener('mousemove', (e) => {
+      if (!isFixed) {
+        const r = getNoRect();
+        const cx = r.left + r.width  / 2;
+        const cy = r.top  + r.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 60) escapeNo(e.clientX, e.clientY);
+      } else {
+        const left = parseFloat(btnNo.style.left);
+        const top  = parseFloat(btnNo.style.top);
+        const cx = left + btnNo.offsetWidth  / 2;
+        const cy = top  + btnNo.offsetHeight / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 60) escapeNo(e.clientX, e.clientY);
+      }
+    });
+
+    // Mobile: touchstart escape
+    btnNo.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      escapeNo(touch.clientX, touch.clientY);
+      e.preventDefault();
+    }, { passive: false });
+
+    // Just in case they somehow click it
+    btnNo.addEventListener('click', (e) => {
+      escapeNo(e.clientX, e.clientY);
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+
+    /* ─────────────────────────────────────────────
+       YES — celebration!
+    ───────────────────────────────────────────── */
+    function handleYes() {
+      // Swap GIF to celebration
+      const gif = document.getElementById('mainGif');
+      gif.src = 'https://media.giphy.com/media/artj92V8o75VPL7AeQ/giphy.gif';
+      gif.alt = 'Celebrating!';
+
+      // Hide buttons + sassy msg
+      document.getElementById('btnRow').style.display = 'none';
+      document.getElementById('sassy').style.display = 'none';
+      document.getElementById('sub').style.display = 'none';
+
+      // Update question
+      const q = document.getElementById('question');
+      q.style.fontFamily = "'Pacifico', cursive";
+      q.textContent = 'She said YES!! 🥰';
+
+      // Show celebration message
+      const msg = document.getElementById('celebrateMsg');
+      msg.style.display = 'block';
+
+      // Confetti explosion!
+      const end = Date.now() + 3500;
+      const colors = ['#ff4f7b', '#ff85a2', '#ffc2d4', '#ffffff', '#ffd700'];
+
+      (function burst() {
+        confetti({
+          particleCount: 12,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors
+        });
+        confetti({
+          particleCount: 12,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors
+        });
+        if (Date.now() < end) requestAnimationFrame(burst);
+      })();
+
+      // Center burst
+      setTimeout(() => {
+        confetti({
+          particleCount: 120,
+          spread: 100,
+          origin: { y: 0.55 },
+          colors
+        });
+      }, 400);
+
+      // Speed up hearts
+      for (let i = 0; i < 12; i++) setTimeout(spawnHeart, i * 80);
+    }
+  </script>
+</body>
+</html>
